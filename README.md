@@ -17,9 +17,16 @@ sudo sh deploy.sh {db.url} {db.username} {db.password} {port} {image.name} {imag
 - - -
 ### UserJoin
 POST `/api/v1/users/join`
+RequestBody 
+> userName   
+> password   
+> email
 
 ### UserLogin
 POST `/api/v1/users/login`
+RequestBody
+> userName   
+> password
 
 ### Post Review
 POST `/api/v1/reviews`

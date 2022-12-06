@@ -2,6 +2,8 @@ package com.example.springjwtauth.controller;
 
 import com.example.springjwtauth.domain.dto.UserJoinRequest;
 import com.example.springjwtauth.domain.dto.UserJoinResponse;
+import com.example.springjwtauth.domain.dto.UserLoginRequest;
+import com.example.springjwtauth.domain.dto.UserLoginResponse;
 import com.example.springjwtauth.domain.entity.UserDto;
 import com.example.springjwtauth.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +23,11 @@ public class UserController {
     public UserJoinResponse userJoin(@RequestBody UserJoinRequest userJoinRequest) {
         UserDto savedUserDto = userService.addUser(userJoinRequest);
         return new UserJoinResponse(savedUserDto.getEmail(), savedUserDto.getUserName());
+    }
+
+    @PostMapping("/login")
+    public UserLoginResponse userLogin(@RequestBody UserLoginRequest userLoginRequest) {
+        String token = userService.userLogin(userLoginRequest);
+        return new UserLoginResponse(token);
     }
 }

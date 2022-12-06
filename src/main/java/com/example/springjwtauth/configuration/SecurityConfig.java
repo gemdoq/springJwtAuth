@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final UserService userService;
 
-    @Value("${jwt.token.secret}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     @Bean
