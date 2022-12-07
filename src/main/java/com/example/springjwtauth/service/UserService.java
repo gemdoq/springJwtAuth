@@ -10,12 +10,14 @@ import com.example.springjwtauth.repository.UserRepository;
 import com.example.springjwtauth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -26,7 +28,7 @@ public class UserService {
                 .ifPresent((user) -> { throw new UserException(ErrorCode.DUPLICATED_USER_NAME, String.format("UserName:%s", userJoinRequest.getUserName()));
                 });
 
-        User savedUser = userRepository.save(userJoinRequest.toEntity());
+        User savedUser = userRepository.save(userJoinRequest.toEntity(bCryptPasswordEncoder.encode(userJoinRequest.getPassword())));
         return UserDto.builder()
                 .email(savedUser.getEmail())
                 .id(savedUser.getId())
@@ -39,7 +41,7 @@ public class UserService {
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND, String.format("UserName %s is not registered user", userLoginRequest.getUserName())));
 
         // deny request if password is invalid
-        if(!userLoginRequest.getPassword().equals(user.getPassword())) {
+        if(!bCryptPasswordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())) {
             throw new UserException(ErrorCode.INVALID_PASSWORD, "Incorrect password");
         }
 
