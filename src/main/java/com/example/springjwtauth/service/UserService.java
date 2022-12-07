@@ -4,6 +4,8 @@ import com.example.springjwtauth.domain.dto.UserJoinRequest;
 import com.example.springjwtauth.domain.dto.UserLoginRequest;
 import com.example.springjwtauth.domain.entity.User;
 import com.example.springjwtauth.domain.entity.UserDto;
+import com.example.springjwtauth.exception.ErrorCode;
+import com.example.springjwtauth.exception.UserException;
 import com.example.springjwtauth.repository.UserRepository;
 import com.example.springjwtauth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,8 @@ public class UserService {
 
     public UserDto addUser(UserJoinRequest userJoinRequest) {
         userRepository.findByUserName(userJoinRequest.getUserName())
-                .ifPresent((user) -> { throw new RuntimeException();});
+                .ifPresent((user) -> { throw new UserException(ErrorCode.DUPLICATED_USER_NAME, String.format("UserName:%s", userJoinRequest.getUserName()));
+                });
 
         User savedUser = userRepository.save(userJoinRequest.toEntity());
         return UserDto.builder()
@@ -33,11 +36,11 @@ public class UserService {
 
     public String userLogin(UserLoginRequest userLoginRequest) {
         User user = userRepository.findByUserName(userLoginRequest.getUserName())
-                .orElseThrow(() -> { throw new RuntimeException("User is not exist");});
+                .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND, String.format("UserName %s is not registered user", userLoginRequest.getUserName())));
 
         // deny request if password is invalid
         if(!userLoginRequest.getPassword().equals(user.getPassword())) {
-            throw new RuntimeException("Password is invalid");
+            throw new UserException(ErrorCode.INVALID_PASSWORD, "Incorrect password");
         }
 
         String token = JwtUtil.generateToken(userLoginRequest.getUserName(), secretKey, expiredTimeMs);
